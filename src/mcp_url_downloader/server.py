@@ -1,3 +1,14 @@
+import sys
+import logging
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
+
+logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+
 import asyncio
 import ipaddress
 import re
@@ -191,7 +202,7 @@ def _sanitize_error(error: Exception) -> str:
 
     # Remove file paths
     error_str = re.sub(r"/[\w/.-]+", "[PATH]", error_str)
-    error_str = re.sub(r"[A-Z]:\\[\w\\.-]+", "[PATH]", error_str)
+    error_str = re.sub(r"[A-Z]:\\[\w\.-]+", "[PATH]", error_str)
 
     # Map to generic messages for common errors
     if isinstance(error, httpx.HTTPStatusError):
@@ -218,7 +229,7 @@ def _sanitize_filename(filename: str) -> str:
     """
     # Remove path separators and other dangerous characters
     # Keep alphanumeric, dots, hyphens, underscores
-    sanitized = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "_", filename)
+    sanitized = re.sub(r'[<>":/\\|?*-\x1f]', "_", filename)
 
     # Remove leading/trailing dots and spaces
     sanitized = sanitized.strip(". ")
